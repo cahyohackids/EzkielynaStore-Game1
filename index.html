@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>PIXELBOUND: Lost Signal</title>
+<meta name="description" content="A retro-futuristic pixel-art platformer. Guide PIP the courier robot through a fragmented digital world to restore the Lost Signal.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <div id="game-viewport">
+    <canvas id="game-canvas" width="640" height="360" aria-label="PIXELBOUND game screen"></canvas>
+
+    <!-- HUD (in-game) -->
+    <div id="hud" class="hidden" aria-hidden="true">
+      <div class="hud-top">
+        <div class="hud-group hud-health" id="hud-health"></div>
+        <div class="hud-group hud-signal">
+          <span class="hud-icon icon-bit"></span>
+          <span id="hud-signal-text">0 / 0</span>
+        </div>
+        <div class="hud-group hud-cores" id="hud-cores"></div>
+      </div>
+      <div class="hud-bottom-left">
+        <div class="dash-meter"><div class="dash-meter-fill" id="hud-dash-fill"></div></div>
+      </div>
+      <div class="hud-level-name" id="hud-level-name"></div>
+    </div>
+
+    <!-- Pause button (top right, always reachable) -->
+    <button id="btn-pause-ingame" class="icon-btn hidden" aria-label="Pause game">❚❚</button>
+
+    <!-- Touch controls -->
+    <div id="touch-controls" class="hidden" aria-hidden="true">
+      <div class="touch-dpad">
+        <button id="touch-left" class="touch-btn" aria-label="Move left">◀</button>
+        <button id="touch-right" class="touch-btn" aria-label="Move right">▶</button>
+      </div>
+      <div class="touch-actions">
+        <button id="touch-dash" class="touch-btn touch-btn-round" aria-label="Dash">DASH</button>
+        <button id="touch-jump" class="touch-btn touch-btn-round touch-btn-jump" aria-label="Jump">JUMP</button>
+      </div>
+    </div>
+
+    <!-- Screens -->
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="logo-mark">PIP</div>
+        <div class="loading-bar"><div class="loading-bar-fill" id="loading-fill"></div></div>
+        <div class="loading-label">CALIBRATING SIGNAL…</div>
+      </div>
+    </div>
+
+    <div id="screen-menu" class="screen hidden">
+      <div class="crt-flicker"></div>
+      <div class="menu-content">
+        <div class="title-block">
+          <div class="title-main">PIXELBOUND</div>
+          <div class="title-sub">LOST SIGNAL</div>
+        </div>
+        <nav class="menu-buttons" aria-label="Main menu">
+          <button class="menu-btn primary" data-action="play">PLAY</button>
+          <button class="menu-btn" data-action="level-select">LEVEL SELECT</button>
+          <button class="menu-btn" data-action="how-to-play">HOW TO PLAY</button>
+          <button class="menu-btn" data-action="settings">SETTINGS</button>
+        </nav>
+        <div class="menu-footer">v1.0 · a signal from PIXELBOUND studio</div>
+      </div>
+    </div>
+
+    <div id="screen-levelselect" class="screen hidden">
+      <div class="panel-header">
+        <button class="back-btn" data-action="back-to-menu" aria-label="Back">◀ BACK</button>
+        <h2>SELECT LEVEL</h2>
+      </div>
+      <div class="level-cards" id="level-cards"></div>
+    </div>
+
+    <div id="screen-howtoplay" class="screen hidden">
+      <div class="panel-header">
+        <button class="back-btn" data-action="back-to-menu" aria-label="Back">◀ BACK</button>
+        <h2>HOW TO PLAY</h2>
+      </div>
+      <div class="htp-content">
+        <div class="htp-col">
+          <div class="htp-row"><span class="key">A/D ◀▶</span><span>Move</span></div>
+          <div class="htp-row"><span class="key">SPACE / W / ▲</span><span>Jump (hold for height)</span></div>
+          <div class="htp-row"><span class="key">SHIFT</span><span>Dash</span></div>
+          <div class="htp-row"><span class="key">R</span><span>Restart from checkpoint</span></div>
+          <div class="htp-row"><span class="key">ESC</span><span>Pause</span></div>
+        </div>
+        <div class="htp-col">
+          <p>Guide PIP across the shattered network. Collect <b>Signal Bits</b> to boost your score, and hunt down 3 hidden <b>Data Cores</b> per level.</p>
+          <p>Stomp enemies from above. Touching them from the side costs an energy cell. Activate <b>checkpoints</b> to lock in your respawn point.</p>
+          <p>Reach the <b>Signal Tower</b> at the end of each level to restore the connection.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-settings" class="screen hidden">
+      <div class="panel-header">
+        <button class="back-btn" data-action="back-to-menu" aria-label="Back">◀ BACK</button>
+        <h2>SETTINGS</h2>
+      </div>
+      <div class="settings-content">
+        <label class="setting-row">
+          <span>Music Volume</span>
+          <input type="range" min="0" max="100" id="set-music" class="slider">
+        </label>
+        <label class="setting-row">
+          <span>SFX Volume</span>
+          <input type="range" min="0" max="100" id="set-sfx" class="slider">
+        </label>
+        <label class="setting-row toggle-row">
+          <span>Mute All</span>
+          <input type="checkbox" id="set-mute" class="toggle">
+        </label>
+        <label class="setting-row toggle-row">
+          <span>Screen Shake</span>
+          <input type="checkbox" id="set-shake" class="toggle">
+        </label>
+        <label class="setting-row toggle-row">
+          <span>Reduced Motion</span>
+          <input type="checkbox" id="set-reduced" class="toggle">
+        </label>
+      </div>
+    </div>
+
+    <div id="screen-pause" class="screen hidden overlay-screen">
+      <div class="panel-box">
+        <h2>PAUSED</h2>
+        <nav class="menu-buttons">
+          <button class="menu-btn primary" data-action="resume">RESUME</button>
+          <button class="menu-btn" data-action="restart-level">RESTART LEVEL</button>
+          <button class="menu-btn" data-action="settings-from-pause">SETTINGS</button>
+          <button class="menu-btn" data-action="main-menu-from-pause">MAIN MENU</button>
+        </nav>
+      </div>
+    </div>
+
+    <div id="screen-gameover" class="screen hidden overlay-screen">
+      <div class="panel-box glitch-box">
+        <h2 class="gameover-title">SIGNAL LOST</h2>
+        <nav class="menu-buttons">
+          <button class="menu-btn primary" data-action="retry">RETRY</button>
+          <button class="menu-btn" data-action="level-select-from-over">LEVEL SELECT</button>
+        </nav>
+      </div>
+    </div>
+
+    <div id="screen-levelcomplete" class="screen hidden overlay-screen">
+      <div class="panel-box complete-box">
+        <h2>SIGNAL RESTORED</h2>
+        <div class="complete-stats">
+          <div class="stat-row"><span>TIME</span><span id="lc-time">00:00</span></div>
+          <div class="stat-row"><span>SIGNAL BITS</span><span id="lc-bits">0 / 0</span></div>
+          <div class="stat-row"><span>DATA CORES</span><span id="lc-cores">0 / 3</span></div>
+          <div class="stat-row"><span>DEATHS</span><span id="lc-deaths">0</span></div>
+        </div>
+        <nav class="menu-buttons">
+          <button class="menu-btn primary" data-action="next-level">NEXT LEVEL</button>
+          <button class="menu-btn" data-action="replay-level">REPLAY</button>
+          <button class="menu-btn" data-action="level-select-from-complete">LEVEL SELECT</button>
+        </nav>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/input.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/save.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/tilemap.js"></script>
+<script src="js/entities/player.js"></script>
+<script src="js/entities/enemies.js"></script>
+<script src="js/entities/collectibles.js"></script>
+<script src="js/entities/hazards.js"></script>
+<script src="js/entities/platforms.js"></script>
+<script src="js/entities/checkpoint.js"></script>
+<script src="js/levels/level1.js"></script>
+<script src="js/levels/level2.js"></script>
+<script src="js/levels/level3.js"></script>
+<script src="js/levelManager.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
